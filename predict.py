@@ -1,5 +1,6 @@
 
 import pandas as pd
+import requests
 from sklearn.preprocessing import StandardScaler
 import joblib
 from tabulate import tabulate
@@ -37,9 +38,21 @@ class HousePricePredictor:
         """Predict house prices using the preprocessed dataset and the loaded model."""
         return self.model.predict(self.data)
 
+# Function to get street name based on latitude and longitude
+def get_street_name(lat, lon):
+    url_base = "https://nominatim.openstreetmap.org/reverse?format=json&lat={}&lon={}&zoom=18&addressdetails=1"
+    url = url_base.format(lat, lon)
+    response = requests.get(url)
+    data = response.json()
+    
+    if 'address' in data:
+        if 'road' in data['address']:
+            return data['address']['road']
+    return "Street name not found"
+
 if __name__ == "__main__":
     model_path = 'best_model.pkl'  # Path to the trained model file
-    data_path = 'data/new_apartment_data.csv'  # Path to the new apartment data CSV file
+    data_path = 'data/new_apartment_data_extended.csv'  # Path to the new apartment data CSV file
     predictor = HousePricePredictor(model_path, data_path)
     predictor.preprocess_data()
     predicted_prices_scaled = predictor.predict_price()  # Predicted prices in scaled form
@@ -53,13 +66,15 @@ if __name__ == "__main__":
 
     # Create a list of lists containing the features and the predicted price
     table_data = []
-    for i, price in enumerate(predicted_prices.flatten(), start=1):
-        features = new_apartment_data.iloc[i-1][['number_rooms', 'living_area', 'garden_area', 'number_facades', 'Longitude', 'Latitude']].tolist()  # Get features for the current property
+    for i, (price, row) in enumerate(zip(predicted_prices.flatten(), new_apartment_data.iterrows()), start=1):
+        index, features = row
+        longitude, latitude = features['Longitude'], features['Latitude']
+        street_name = get_street_name(latitude, longitude)
         formatted_price = f"€{price:,.2f}"  # Format price with commas and 2 decimal places
-        table_data.append([f"Property {i}", features, formatted_price])
+        table_data.append([f"Property {i}", features.tolist(), street_name, formatted_price])
 
     # Print the table
-    headers = ["Property", "Features", "Predicted Price"]
+    headers = ["Property", "Features", "Street Address", "Predicted Price"]
     print(tabulate(table_data, headers=headers))
 
 
