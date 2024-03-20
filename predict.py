@@ -55,11 +55,13 @@ if __name__ == "__main__":
     table_data = []
     for i, price in enumerate(predicted_prices.flatten(), start=1):
         features = new_apartment_data.iloc[i-1][['number_rooms', 'living_area', 'garden_area', 'number_facades', 'Longitude', 'Latitude']].tolist()  # Get features for the current property
-        table_data.append([f"Property {i}", features, f"€{price:,.0f}"])
+        formatted_price = f"€{price:,.2f}"  # Format price with commas and 2 decimal places
+        table_data.append([f"Property {i}", features, formatted_price])
 
     # Print the table
     headers = ["Property", "Features", "Predicted Price"]
     print(tabulate(table_data, headers=headers))
+
 
 
 
