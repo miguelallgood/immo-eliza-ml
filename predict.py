@@ -52,7 +52,7 @@ def get_street_name(lat, lon):
 
 if __name__ == "__main__":
     model_path = 'best_model.pkl'  # Path to the trained model file
-    data_path = 'data/new_apartment_data_extended.csv'  # Path to the new apartment data CSV file
+    data_path = 'data/new_apartment_data.csv'  # Path to the new apartment data CSV file
     predictor = HousePricePredictor(model_path, data_path)
     predictor.preprocess_data()
     predicted_prices_scaled = predictor.predict_price()  # Predicted prices in scaled form
